@@ -25,20 +25,20 @@ Start with [ACME micro\_inetd](http://www.acme.com/software/micro_inetd/) or any
 
 Add following:
 
-  add\_route '^/hello/$' hello
-
-  action\_hello(){
+```add\_route '^/hello/$' hello
+action\_hello(){
     X=`wc -l < /etc/passwd`
-  }
+}
 
-  view\_hello(){
+view\_hello(){
     echo "<html>"
     echo "<p>lines in passwd: $X</p>"
     cat file.txt | \_e
     echo "</html>"
-  }
+}
+```
 
 ## start the HTTPD
 
-  $ micro-inetd 8080 /path/to/httpd.sh
+    $ micro-inetd 8080 /path/to/httpd.sh
 
