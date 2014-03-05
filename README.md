@@ -26,15 +26,16 @@ Start with [ACME micro\_inetd](http://www.acme.com/software/micro_inetd/) or any
 Add following:
 
 ```
-add\_route '^/hello/$' hello
-action\_hello(){
+add_route '^/hello/$' hello
+
+action_hello(){
     X=`wc -l < /etc/passwd`
 }
 
-view\_hello(){
+view_hello(){
     echo "<html>"
     echo "<p>lines in passwd: $X</p>"
-    cat file.txt | \_e
+    cat file.txt | _e
     echo "</html>"
 }
 ```
