@@ -15,7 +15,7 @@
 #
 # initial settings
 
-SERVER_VERSION="shellscripthttpd/0.1.0"
+SERVER_VERSION="shellscripthttpd/0.2.0"
 SERVER_PROTOCOL="HTTP/1.0"
 CHARSET="UTF-8"
 CONTENT_TYPE="text/html; charset=$CHARSET"
@@ -64,7 +64,7 @@ cleanup(){
     rm -f "$REQUEST_HEADERS_FILE"
     rm -f "$ROUTES_FILE"
     rm -f "$RESPONSE_FILE"
-    #rm -f "$REQUEST_BODY"
+    rm -f "$REQUEST_BODY"
 }
 
 request(){
