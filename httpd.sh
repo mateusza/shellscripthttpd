@@ -104,10 +104,6 @@ request(){
         echo -n '&' >> $REQUEST_BODY
     fi
 
-# TODO read data if Content-Length specified
-#    
-#    echo "Len: $HTTP_CONTENT_LENGTH"
-#    cat > /tmp/dupa.txt
 }
 
 response(){
@@ -271,9 +267,6 @@ action_form1_save(){
     echo "$a: $bb" >> /tmp/chat.txt
 }
 
-view_form1_save(){
-    echo DUPA
-}
 ##
 ## ROUTES
 ##
