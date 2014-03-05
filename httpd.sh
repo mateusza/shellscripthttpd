@@ -11,7 +11,7 @@
 #  * support GET, POST and HEAD methods
 #  * follows POST/Redirect/GET pattern
 #  * single file
-#  * exports request header according to CGI standard: HTTP_
+#  * exports request headers according to CGI standard: HTTP_
 #
 # initial settings
 
