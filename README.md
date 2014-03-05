@@ -25,7 +25,8 @@ Start with [ACME micro\_inetd](http://www.acme.com/software/micro_inetd/) or any
 
 Add following:
 
-```add\_route '^/hello/$' hello
+```
+add\_route '^/hello/$' hello
 action\_hello(){
     X=`wc -l < /etc/passwd`
 }
