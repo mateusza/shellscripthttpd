@@ -50,6 +50,15 @@ require_POST(){
     fi    
 }
 
+require_XSRF(){
+    if [ "x$XSRF" != "x$( read_post_var XSRF )" ]
+    then
+        CODE="500"
+        VIEW="ERROR500"
+        return 1
+    fi
+}
+
 read_post_var(){
     grep -o "\&$1=[^\&]\+" < $REQUEST_BODY | sed -e 's/.*=//' | urldecode
 }
@@ -105,16 +114,14 @@ request(){
         echo -n '&' >> $REQUEST_BODY
     fi
 
-    if [ "x$HTTP_COOKIE" != "x" ]
-    then
-        session_load_cookie
-        session_check_cookie
-    fi
-
+    session_load_cookie
+    session_check_cookie
+    xsrf_init
+    
 }
 
 session_load_cookie(){
-        SESSION_ID=$( echo "$HTTP_COOKIE" | grep -o "\b$SESSION_COOKIE_NAME=[^;]\+" | sed -e 's/^.\+=//' )
+    SESSION_ID="$( echo "$HTTP_COOKIE" | grep -o "\b$SESSION_COOKIE_NAME=[^;]\+" | sed -e 's/^.\+=//' )"
 }
 
 session_check_cookie(){
@@ -132,14 +139,23 @@ session_gen_id(){
 }
 
 session_set_value(){
-    session_check_cookie
     cat > "$TEMP_DIR/session-$SESSION_ID-${1}.txt"
 }
 
 session_get_value(){
-    session_check_cookie
     [ -e "$TEMP_DIR/session-$SESSION_ID-${1}.txt" ] && cat "$TEMP_DIR/session-$SESSION_ID-${1}.txt"
 }
+
+xsrf_init(){
+    XSRF="$( session_get_value XSRF )"
+    if [ "x$XSRF" = "x" ]
+    then
+        XSRF="$( head -c 32 /dev/urandom | md5sum | cut -d " " -f 1 )"
+        echo $XSRF | session_set_value XSRF
+    fi
+}
+
+
 
 response(){
     view_$VIEW > $RESPONSE_FILE
