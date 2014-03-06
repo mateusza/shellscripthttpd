@@ -142,7 +142,7 @@ urldecode(){
       /usr/bin/printf "$(sed 's/+/ /g;s/%\(..\)/\\x\1/g;')"
 }
 
-action(){
+prepare(){
     DATE=$(date +"%a, %d %b %Y %H:%M:%S %Z")
     add_header "Date" "$DATE"
     add_header "Connection" "close"
@@ -161,7 +161,7 @@ _e(){
 
 run(){
     request
-    action
+    prepare
     route
     response | awk 'sub("$", "\r")'
     cleanup
