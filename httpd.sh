@@ -11,7 +11,7 @@ SESSION_COOKIE_NAME="SessionId"
 # initial settings
 
 SERVER_SOFTWARE="shellscripthttpd"
-SERVER_VERSION="0.3.0"
+SERVER_VERSION="0.4.0"
 SERVER_PROTOCOL="HTTP/1.0"
 CHARSET="UTF-8"
 CONTENT_TYPE="text/html; charset=$CHARSET"
@@ -269,6 +269,7 @@ view_REDIRECT(){
 
 action_index(){
     name="Mateusz"
+    githublink="https://github.com/mateusza/shellscripthttpd"
     os=$( uname -a )
 }
 
@@ -279,20 +280,19 @@ cat <<EOF
 <head>
 <title>Hello from $name</title>
 <style> 
-body { background-color: #010; padding: 50px; font-size: 150%; color: #de9; font-family: sans-serif; text-shadow: #888 1px 1px 1px; text-align: center; } 
+body { background-color: #242; padding: 50px; font-size: 150%; color: #fff; font-family: monospace; text-shadow: #000 1px 1px 1px; text-align: center; } 
 pre { text-align: left; } 
 ::selection { background-color: #4f4; color: #000; text-shadow: #242; }
-a { color: #ff0; }
+a { color: #f90; }
 </style>
 </head>
 <body>
 <h1>Hello world!</h1>
 <h2>This is front page of your <b>$SERVER_SOFTWARE</b> instance.</h2>
-<p>
-We are running on: <tt>$os</tt><br>
-<br>
-</p>
-<p><a href='session1/'>Session support test</a></p>
+<p>You can browse the source code on <a href='$githublink'>GitHub</a>.</p>
+<p><small>
+Running on: <tt>$os</tt>
+</small></p>
 $( template_server_signature )
 </body>
 </html>
