@@ -173,12 +173,21 @@ prepare(){
     add_header "Content-Type" "$CONTENT_TYPE"
 }
 
+websocket_ticket(){
+    /usr/bin/printf "$( \
+        echo -n "$1""$WEBSOCKET_MAGIC_GUID" | \
+        sha1sum | \
+        grep -o '[0-9a-f]\+' | \
+        sed -e 's/../\\x\0/g'
+    )" | base64
+}
+
 prepare_websocket(){
     SHOW_RESPONSE="no"
     CODE="101"
     add_header "Upgrade" "websocket"
     add_header "Connection" "upgrade"
-    WEBSOCKET_TICKET="$( /usr/bin/printf "$( echo -n $HTTP_SEC_WEBSOCKET_KEY$WEBSOCKET_MAGIC_GUID | sha1sum | grep -o '[0-9a-f]\+' | sed -e 's/../\\x\0/g' )" | base64 )"
+    WEBSOCKET_TICKET="$( websocket_ticket "$HTTP_SEC_WEBSOCKET_KEY" )"
     add_header "Sec-WebSocket-Accept" "$WEBSOCKET_TICKET"
 }
 
