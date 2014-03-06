@@ -123,7 +123,7 @@ session_check_cookie(){
         true
     else
         session_gen_id
-        add_header "Set-Cookie" "$SESSION_COOKIE_NAME=$SESSION_ID"
+        add_header "Set-Cookie" "$SESSION_COOKIE_NAME=$SESSION_ID; HttpOnly"
     fi
 }
 
