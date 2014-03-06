@@ -5,14 +5,6 @@
 # This code is public domain. You are free to use it anywhere you want.
 # Please drop a line once you find it useful.
 #
-# Features:
-#  * works with inetd
-#  * supports HTTP/1.0
-#  * support GET, POST and HEAD methods
-#  * follows POST/Redirect/GET pattern
-#  * single file
-#  * exports request headers according to CGI standard: HTTP_
-#
 # initial settings
 
 SERVER_VERSION="shellscripthttpd/0.2.0"
