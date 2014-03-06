@@ -13,6 +13,7 @@ Start with [ACME micro\_inetd](http://www.acme.com/software/micro_inetd/) or any
 * follows POST/Redirect/GET pattern
 * single file
 * exports request headers according to CGI standard: HTTP_
+* experimental support for WebSockets
 
 ## built-in functions
 * add\_route
