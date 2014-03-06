@@ -130,7 +130,7 @@ session_check_cookie(){
         true
     else
         session_gen_id
-        add_header "Set-Cookie" "$SESSION_COOKIE_NAME=$SESSION_ID; HttpOnly"
+        add_header "Set-Cookie" "$SESSION_COOKIE_NAME=$SESSION_ID; HttpOnly; Path=/"
     fi
 }
 
@@ -156,6 +156,7 @@ session_regenerate_id(){
         newname=$( echo $filename | sed -e "s/$old_id/$SESSION_ID/" )
         mv "$filename" "$newname"
     done
+    add_header "Set-Cookie" "$SESSION_COOKIE_NAME=$SESSION_ID; HttpOnly; Path=/"
 }
 
 xsrf_init(){
@@ -336,6 +337,31 @@ action_xsrf_form_submit(){
     redirect '/xsrf-form/'
     echo success | session_set_value result
 }
+
+action_session2(){
+    counter="$( session_get_value counter )"
+}
+
+view_session2(){
+cat <<EOF
+<html>
+<p>$SESSION_ID</p>
+<p>counter: $counter</p>
+
+<form action='change' method='POST'>
+<input type='submit'>
+<input type='hidden' name='XSRF' value="$XSRF">
+</form>
+EOF
+}
+
+action_session2_change(){
+    require_POST || return 1
+    require_XSRF || return 1
+    redirect '/session2/'
+    session_regenerate_id
+}
+
 ##
 ## ROUTES
 ##
@@ -344,7 +370,8 @@ add_route '^/$'             'index'
 add_route '^/session1/$'    'session1'
 add_route '^/xsrf-form/$'   'xsrf_form'
 add_route '^/xsrf-form/submit$' 'xsrf_form_submit'
-
+add_route '^/session2/$'    'session2'
+add_route '^/session2/change$'  'session2_change'
 ##
 ## process the request
 ##
