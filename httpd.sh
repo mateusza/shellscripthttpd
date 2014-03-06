@@ -222,9 +222,35 @@ a { color: #ff0; }
 <h2>This is front page of your <b>$SERVER_SOFTWARE</b> instance.</h2>
 <p>See the example apps:</p>
 <ul>
+<li>
+<a href='/numbers/'>numbers form</a>
+</li>
 </ul>
 $( template_server_signature )
 </body>
+</html>
+EOF
+}
+
+action_numbers(){
+    aa="$( read_get_var aa )"
+    bb="$( read_get_var bb )"
+    [ "x$aa" = "x" ] && aa=0
+    [ "x$bb" = "x" ] && bb=0
+    cc=$(( $aa + $bb ))
+}
+
+view_numbers(){
+cat <<EOF
+<!doctype html>
+<html>
+<h1>numbers form</h1>
+<form action='.' method='GET'>
+<input name='aa' value='$( echo $aa | _e )'> +
+<input name='bb' value='$( echo $bb | _e )'>
+<input type='submit' value='='>
+<output>$cc</output>
+</form>
 </html>
 EOF
 }
@@ -234,7 +260,7 @@ EOF
 ##
 
 add_route '^/$'             'index'
-
+add_route '^/numbers/$'     'numbers'
 ##
 ## process the request
 ##
