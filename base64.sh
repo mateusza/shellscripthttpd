@@ -3,9 +3,6 @@
 # fallback base64 implementation
 # works with busybox
 
-# KNOWN BUGS:
-# - works only for one line strings
-
 encode(){
 
     hexdump -v -e '2/1 "%02x"' | \
