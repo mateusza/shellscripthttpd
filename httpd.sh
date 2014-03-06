@@ -259,6 +259,7 @@ a { color: #ff0; }
 We are running on: <tt>$os</tt><br>
 <br>
 </p>
+<p><a href='session1/'>Session support test</a></p>
 $( template_server_signature )
 </body>
 </html>
