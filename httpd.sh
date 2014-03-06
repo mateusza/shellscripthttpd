@@ -59,6 +59,12 @@ read_post_var(){
     grep -o "\&$var=[^\&]\+" < $REQUEST_BODY | sed -e 's/.*=//' | urldecode
 }
 
+read_get_var(){
+    local var
+    var="$1"
+    echo "&$QUERY_STRING&" | grep -o "\&$var=[^\&]\+" | sed -e 's/.*=//' | urldecode
+}
+
 cleanup(){
     rm -f "$RESPONSE_HEADERS_FILE"
     rm -f "$REQUEST_HEADERS_FILE"
@@ -183,7 +189,7 @@ view_ERROR404(){
 }
 
 action_ERROR404(){
-    echo -n
+    true 
 }
 
 view_REDIRECT(){
@@ -199,7 +205,7 @@ action_test1(){
 }
 
 action_source(){
-    echo -n
+   true 
 }
 action_say(){
     require_POST
@@ -244,7 +250,7 @@ view_source(){
 }
 
 action_form1(){
-    echo -n
+    true
 }
 
 view_form1(){
@@ -267,6 +273,29 @@ action_form1_save(){
     echo "$a: $bb" >> /tmp/chat.txt
 }
 
+action_form2(){
+    aa="$( read_get_var aa )"
+    bb="$( read_get_var bb )"
+    [ "x$aa" = "x" ] && aa=0
+    [ "x$bb" = "x" ] && bb=0
+    cc=$(( $aa + $bb ))
+}
+
+view_form2(){
+cat <<EOF
+<!doctype html>
+<html>
+<h1>form 2</h1>
+<form action='.' method='GET'>
+<input name='aa' value='$( echo $aa | _e )'> +
+<input name='bb' value='$( echo $bb | _e )'>
+<input type='submit' value='='>
+<output>$cc</output>
+</form>
+</html>
+EOF
+}
+
 ##
 ## ROUTES
 ##
@@ -276,6 +305,7 @@ add_route '^/source/$'      'source'
 add_route '^/x/say$'        'say'
 add_route '^/form1/$'       'form1'
 add_route '^/form1/save$'   'form1_save'
+add_route '^/form2/$'       'form2'
 
 ##
 ## process the request
