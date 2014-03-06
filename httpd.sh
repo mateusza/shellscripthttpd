@@ -298,12 +298,41 @@ cat <<EOF
 EOF
 }
 
+action_xsrf_form(){
+    result=$( session_get_value result )
+    echo | session_set_value result
+}
+
+view_xsrf_form(){
+cat <<EOF
+<h1>Form</h1>
+<p>result: $result</p>
+<form method='POST' action='submit'>
+<input type='hidden' name='XSRF' value='$XSRF'>
+<input type='submit'>
+</form>
+<h2>broken form (lacking XSRF field)</h2>
+<form method='POST' action='submit'>
+<input type='submit'>
+</form>
+EOF
+}
+
+action_xsrf_form_submit(){
+    require_POST || return 1
+    require_XSRF || return 1
+    redirect '/xsrf-form/'
+    echo success | session_set_value result
+}
 ##
 ## ROUTES
 ##
 
 add_route '^/$'             'index'
 add_route '^/session1/$'    'session1'
+add_route '^/xsrf-form/$'   'xsrf_form'
+add_route '^/xsrf-form/submit$' 'xsrf_form_submit'
+
 ##
 ## process the request
 ##
