@@ -202,7 +202,6 @@ view_REDIRECT(){
 
 action_index(){
     name="Mateusz"
-    os=$( uname -a )
 }
 
 view_index(){
