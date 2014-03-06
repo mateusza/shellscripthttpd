@@ -5,26 +5,24 @@
 # This code is public domain. You are free to use it anywhere you want.
 # Please drop a line once you find it useful.
 #
-# Features:
-#  * works with inetd
-#  * supports HTTP/1.0
-#  * support GET, POST and HEAD methods
-#  * follows POST/Redirect/GET pattern
-#  * single file
-#  * exports request headers according to CGI standard: HTTP_
-#
+# custom settings
+TEMP_DIR="/tmp/ss"
+
 # initial settings
 
-SERVER_VERSION="shellscripthttpd/0.2.0"
+SERVER_SOFTWARE="shellscripthttpd"
+SERVER_VERSION="0.3.0"
 SERVER_PROTOCOL="HTTP/1.0"
 CHARSET="UTF-8"
 CONTENT_TYPE="text/html; charset=$CHARSET"
 
-RESPONSE_HEADERS_FILE="/tmp/http-response-headers.$$.txt"
-RESPONSE_FILE="/tmp/http-response.$$.txt"
-REQUEST_HEADERS_FILE="/tmp/http-request-headers.$$.txt"
-REQUEST_BODY="/tmp/http-request.$$.txt"
-ROUTES_FILE="/tmp/http-routes.$$.txt"
+RESPONSE_HEADERS_FILE="$TEMP_DIR/http-response-headers.$$.txt"
+RESPONSE_FILE="$TEMP_DIR/http-response.$$.txt"
+REQUEST_HEADERS_FILE="$TEMP_DIR/http-request-headers.$$.txt"
+REQUEST_BODY="$TEMP_DIR/http-request.$$.txt"
+ROUTES_FILE="$TEMP_DIR/http-routes.$$.txt"
+
+SERVER_NAME="$SERVER_SOFTWARE/$SERVER_VERSION"
 
 WEBSOCKET_MAGIC_GUID="258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
@@ -34,8 +32,8 @@ response_name(){
     [ "$1" = "101" ] && echo "Switching Protocols"
     [ "$1" = "200" ] && echo "OK"
     [ "$1" = "404" ] && echo "Not found"
-    [ "$1" = "500" ] && echo "Internal Server Error"
     [ "$1" = "303" ] && echo "See other"
+    [ "$1" = "500" ] && echo "Internal Server Error"
 }
 
 add_header(){
@@ -51,8 +49,7 @@ require_POST(){
     then
         CODE="500"
         VIEW="ERROR500"
-        response
-        exit
+        return 1
     fi    
 }
 
@@ -75,6 +72,8 @@ cleanup(){
 request(){
     local hname
     local hvalue
+
+    mkdir -p "$TEMP_DIR"
 
     touch "$RESPONSE_HEADERS_FILE"
     touch "$REQUEST_HEADERS_FILE"
@@ -206,12 +205,21 @@ redirect(){
     CODE=303
 }
 
+template_server_signature(){
+    echo "<hr><p>$SERVER_NAME</p>"
+}
+
 view_ERROR500(){
-    echo "<h1>ERROR 500</h1>"
+    echo "<title>Internal Server Error</title>"
+    echo "<h1>Internal Server Error</h1>"
+    echo "<p>Something wrong happened.</p>"
+    template_server_signature
 }
 
 view_ERROR404(){
+    echo "<title>404 Not found</title>"
     echo "<h1>404 Not found</h1>"
+    template_server_signature
 }
 
 action_ERROR404(){
@@ -220,104 +228,39 @@ action_ERROR404(){
 
 view_REDIRECT(){
     echo "<h1>redirecting... <code>$REDIRECTION_LOCATION</code></h1>"
+    template_server_signature
 }
 
 #
 # CUSTOM ACTIONS AND VIEWS
 #
 
-action_test1(){
-    XXX="`date`"
+action_index(){
+    name="Mateusz"
+    os=$( uname -a )
 }
 
-action_source(){
-   true 
-}
-action_say(){
-    require_POST
-    redirect '/'
-    echo action | espeak
-}
-
-view_test1(){
-    echo "<html>"
-    echo "<h1>$XXX</h1>"
-    echo "<pre>HTTP_HOST"
-    echo "$( echo $HTTP_HOST | _e )</pre>"
-    echo "<pre>HTTP_USER_AGENT"
-    echo "$( echo $HTTP_USER_AGENT | _e )</pre>"
-    echo "<table border=1>"
-    while read -r h
-    do
-      echo "<tr>"
-      echo "<td><code>"
-      echo "$h" | grep -o '^[-A-Za-z]\+' | _e
-      echo "</code></td>"
-      echo "<td><code>"
-      echo "$h" | sed -e 's/^.*: //' | _e 
-      echo "</code></td></tr>"
-    done < $REQUEST_HEADERS_FILE
-    echo "</table>"
-    echo "<h2><code>[$REQUEST_METHOD] [$SCRIPT_NAME] [$SERVER_PROTOCOL]</code></h2>"
-    echo "<pre>params: $QUERY_STRING</pre>"
-    echo "<a href='/source/'>Source</a>"
-    echo "<form action='/x/say' method=POST>"
-    echo "<input type=submit>"
-    echo "</form>"
-    echo "</html>"
-}
-
-view_source(){
-    echo "<html>"
-    echo "<textarea rows=10 cols=60>"
-    cat httpd.sh | _e 
-    echo "</textarea>"
-    echo "</html>"
-}
-
-action_form1(){
-    true
-}
-
-view_form1(){
-    echo '<pre>'
-    touch /tmp/chat.txt
-    tail -20 /tmp/chat.txt | _e
-    echo '</pre>'
-    echo '<form method=POST action="save">'
-    echo '<input name=a>'
-    echo '<input name=bb>'
-    echo '<input type=submit>'
-    echo '</form>'
-}
-
-action_form1_save(){
-    require_POST
-    redirect '/form1/'
-    a=$( read_post_var a )
-    bb=$( read_post_var bb )
-    echo "$a: $bb" >> /tmp/chat.txt
-}
-
-action_form2(){
-    aa="$( read_get_var aa )"
-    bb="$( read_get_var bb )"
-    [ "x$aa" = "x" ] && aa=0
-    [ "x$bb" = "x" ] && bb=0
-    cc=$(( $aa + $bb ))
-}
-
-view_form2(){
+view_index(){
 cat <<EOF
 <!doctype html>
 <html>
-<h1>form 2</h1>
-<form action='.' method='GET'>
-<input name='aa' value='$( echo $aa | _e )'> +
-<input name='bb' value='$( echo $bb | _e )'>
-<input type='submit' value='='>
-<output>$cc</output>
-</form>
+<head>
+<title>Hello from $name</title>
+<style> 
+body { background-color: #010; padding: 50px; font-size: 150%; color: #de9; font-family: sans-serif; text-shadow: #888 1px 1px 1px; text-align: center; } 
+pre { text-align: left; } 
+::selection { background-color: #4f4; color: #000; text-shadow: #242; }
+</style>
+</head>
+<body>
+<h1>Hello world!</h1>
+<h2>This is front page of your <b>$SERVER_SOFTWARE</b> instance.</h2>
+<p>
+We are running on: <tt>$os</tt><br>
+<br>
+</p>
+$( template_server_signature )
+</body>
 </html>
 EOF
 }
@@ -357,14 +300,10 @@ view_wsconnect(){
 ## ROUTES
 ##
 
-add_route '^/$'             'test1'
-add_route '^/source/$'      'source'
-add_route '^/x/say$'        'say'
-add_route '^/form1/$'       'form1'
-add_route '^/form1/save$'   'form1_save'
-add_route '^/form2/$'       'form2'
+add_route '^/$'             'index'
 add_route '^/ws/$'          'ws'
 add_route '^/wsconnect/$'   'wsconnect'
+
 ##
 ## process the request
 ##
