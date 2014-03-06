@@ -46,8 +46,7 @@ require_POST(){
     then
         CODE="500"
         VIEW="ERROR500"
-        response
-        exit
+        return 1
     fi    
 }
 
