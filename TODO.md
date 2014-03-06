@@ -1,7 +1,6 @@
 TODO
 ====
 
-* GET params decode
 * session cookies
   * assign session ID
   * rename session ID
@@ -11,3 +10,4 @@ TODO
   * write variable
 * serve local files
 * handle locations lacking trailing slash
+* WebSockets
