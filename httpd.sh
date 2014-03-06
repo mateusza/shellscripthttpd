@@ -54,15 +54,11 @@ require_POST(){
 }
 
 read_post_var(){
-    local var
-    var="$1"
-    grep -o "\&$var=[^\&]\+" < $REQUEST_BODY | sed -e 's/.*=//' | urldecode
+    grep -o "\&$1=[^\&]\+" < $REQUEST_BODY | sed -e 's/.*=//' | urldecode
 }
 
 read_get_var(){
-    local var
-    var="$1"
-    echo "&$QUERY_STRING&" | grep -o "\&$var=[^\&]\+" | sed -e 's/.*=//' | urldecode
+    echo "&$QUERY_STRING&" | grep -o "\&$1=[^\&]\+" | sed -e 's/.*=//' | urldecode
 }
 
 cleanup(){
