@@ -113,11 +113,15 @@ request(){
         head -c $HTTP_CONTENT_LENGTH >> $REQUEST_BODY
         echo -n '&' >> $REQUEST_BODY
     fi
-
-    session_load_cookie
-    session_check_cookie
-    xsrf_init
     
+    if [ "x$REQUEST_METHOD" != "x" ]
+    then
+        session_load_cookie
+        session_check_cookie
+        xsrf_init
+    fi
+    
+#    add_header "X-Test" "$REQUEST_METHOD $REQUEST_URI $CLIENT_PROTOCOL"
 }
 
 session_load_cookie(){
