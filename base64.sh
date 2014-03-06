@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # fallback base64 implementation
+# works with busybox
 
 encode(){
 
