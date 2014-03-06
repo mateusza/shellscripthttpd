@@ -225,6 +225,10 @@ a { color: #ff0; }
 <li>
 <a href='/numbers/'>numbers form</a>
 </li>
+<li>
+<a href='/chat/'>chat</a>
+</li>
+</li>
 </ul>
 $( template_server_signature )
 </body>
@@ -255,12 +259,49 @@ cat <<EOF
 EOF
 }
 
+action_chat(){
+    chatfile="$TEMP_DIR/chat.txt"
+    touch "$chatfile"
+}
+
+view_chat(){
+cat <<EOF
+<!doctype>
+<html>
+<head>
+<title>chat</title>
+</head>
+<body>
+<pre>
+$( tail -20 "$chatfile" | _e )
+</pre>
+<form method=POST action=sendmsg>
+<input name=nick placeholder="your nick">:
+<input size=30 name=msg placeholder="type your message here">
+<input type=submit>
+</form>
+</body>
+</html>
+EOF
+}
+
+action_chat_sendmsg(){
+    require_POST || return
+    redirect '/chat/'
+    nick="$( read_post_var nick )"
+    msg="$( read_post_var msg )"
+    echo "$nick: $msg" >> $TEMP_DIR/chat.txt
+}
+
 ##
 ## ROUTES
 ##
 
 add_route '^/$'             'index'
 add_route '^/numbers/$'     'numbers'
+add_route '^/chat/$'        'chat'
+add_route '^/chat/sendmsg$' 'chat_sendmsg'
+
 ##
 ## process the request
 ##
