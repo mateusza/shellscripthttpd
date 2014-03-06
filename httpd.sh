@@ -291,6 +291,7 @@ a { color: #f90; }
 <h2>This is front page of your <b>$SERVER_SOFTWARE</b> instance.</h2>
 <p>See the example apps:</p>
 <ul>
+<li><a href='/form-xsrf/'>xsrf test</a></li>
 </ul>
 
 <p>You can browse the source code on <a href='$githublink'>GitHub</a>.</p>
@@ -303,12 +304,60 @@ $( template_server_signature )
 EOF
 }
 
+action_form(){
+    result=$( session_get_value result )
+    echo -n | session_set_value result
+}
+
+view_form(){
+cat <<EOF
+<script>
+function reveal(){
+    var elements = document.querySelectorAll('input.x')
+    for ( var i = 0; i < elements.length; i++ ){
+        elements[i].setAttribute('type', 'text' )
+    }
+}
+</script>
+<h1>Forms</h1>
+EOF
+[ "x$result" != "x" ] && cat <<EOF
+<div style='background-color: #0d0; color: #fff'>
+result: $result
+</div>
+EOF
+cat <<EOF
+<h2>form with missing XSRF field</h2>
+<form action="go" method="POST">
+<input type='submit'>
+</form>
+<h2>form with wrong XSRF token</h2>
+<form action="go" method="POST">
+<input class='x' type=hidden name=XSRF value='wrongvalue123'>
+<input type='submit'>
+</form>
+<h2>correct form</h2>
+<form action="go" method="POST">
+<input class='x' type=hidden name=XSRF value=$XSRF>
+<input type=submit>
+</form>
+<button onclick='reveal()'>reveal XSRF fields</button>
+EOF
+}
+
+action_go(){
+    require_POST || return 1
+    require_XSRF || return 1
+    redirect '/form-xsrf/'
+    echo success | session_set_value result
+}
 ##
 ## ROUTES
 ##
 
 add_route '^/$'             'index'
-
+add_route '^/form-xsrf/$'   'form'
+add_route '^/form-xsrf/go$' 'go'
 ##
 ## process the request
 ##
