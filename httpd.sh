@@ -291,6 +291,7 @@ a { color: #f90; }
 <h2>This is front page of your <b>$SERVER_SOFTWARE</b> instance.</h2>
 <p>See the example apps:</p>
 <ul>
+<li><a href='/session-counter/'>session counter</a></li>
 </ul>
 
 <p>You can browse the source code on <a href='$githublink'>GitHub</a>.</p>
@@ -302,6 +303,29 @@ $( template_server_signature )
 </html>
 EOF
 }
+
+action_session_counter(){
+    n="$( session_get_value counter )"
+    [ "x$n" = "x" ] && n=0
+    n=$(( $n + 1 ))
+    echo $n | session_set_value counter
+}
+
+view_session_counter(){
+cat <<EOF
+<html>
+<h1>Session based counter</h1>
+<p>Session id: $SESSION_ID</p>
+<p>Value: $n</p>
+EOF
+}
+
+##
+## ROUTES
+##
+
+add_route '^/$'             'index'
+add_route '^/session-counter/$'    'session_counter'
 
 ##
 ## ROUTES
