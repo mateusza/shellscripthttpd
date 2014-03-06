@@ -164,7 +164,7 @@ prepare(){
     DATE=$(date +"%a, %d %b %Y %H:%M:%S %Z")
     add_header "Date" "$DATE"
     add_header "Server" "$SERVER_VERSION"
-    if [ "$HTTP_CONNECTION" = "Upgrade" ] && [ "$HTTP_UPGRADE" = "websocket" ]
+    if [ "$( echo "$HTTP_CONNECTION" | grep -o '\bUpgrade\b' )" = "Upgrade" ] && [ "$HTTP_UPGRADE" = "websocket" ]
     then
         prepare_websocket
         return
