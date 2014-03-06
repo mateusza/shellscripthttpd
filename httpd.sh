@@ -5,6 +5,9 @@
 # This code is public domain. You are free to use it anywhere you want.
 # Please drop a line once you find it useful.
 #
+# custom settings
+TEMP_DIR="/tmp/ss"
+
 # initial settings
 
 SERVER_VERSION="shellscripthttpd/0.2.0"
@@ -12,11 +15,11 @@ SERVER_PROTOCOL="HTTP/1.0"
 CHARSET="UTF-8"
 CONTENT_TYPE="text/html; charset=$CHARSET"
 
-RESPONSE_HEADERS_FILE="/tmp/http-response-headers.$$.txt"
-RESPONSE_FILE="/tmp/http-response.$$.txt"
-REQUEST_HEADERS_FILE="/tmp/http-request-headers.$$.txt"
-REQUEST_BODY="/tmp/http-request.$$.txt"
-ROUTES_FILE="/tmp/http-routes.$$.txt"
+RESPONSE_HEADERS_FILE="$TEMP_DIR/http-response-headers.$$.txt"
+RESPONSE_FILE="$TEMP_DIR/http-response.$$.txt"
+REQUEST_HEADERS_FILE="$TEMP_DIR/http-request-headers.$$.txt"
+REQUEST_BODY="$TEMP_DIR/http-request.$$.txt"
+ROUTES_FILE="$TEMP_DIR/http-routes.$$.txt"
 
 # functions
 
@@ -64,6 +67,8 @@ cleanup(){
 request(){
     local hname
     local hvalue
+
+    mkdir -p "$TEMP_DIR"
 
     touch "$RESPONSE_HEADERS_FILE"
     touch "$REQUEST_HEADERS_FILE"
