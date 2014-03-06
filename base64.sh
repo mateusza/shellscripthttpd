@@ -8,7 +8,6 @@
 
 encode(){
 
-    tr -d '\n' | \
     hexdump -v -e '2/1 "%02x"' | \
         sed -e 's/0/0000 /g;s/1/0001 /g;s/2/0010 /g;s/3/0011 /g;
                 s/4/0100 /g;s/5/0101 /g;s/6/0110 /g;s/7/0111 /g;
@@ -47,6 +46,7 @@ encode(){
 decode(){
  
 /usr/bin/printf "$(
+tr -d '\n' | \
 sed -e '               
         s_A==_@@_;    s_Q==_@,_;    s_g==_,@_;    s_w==_,,_;
 
