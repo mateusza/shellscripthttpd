@@ -291,13 +291,9 @@ a { color: #f90; }
 <h2>This is front page of your <b>$SERVER_SOFTWARE</b> instance.</h2>
 <p>See the example apps:</p>
 <ul>
-<li>
-<a href='/numbers/'>numbers form</a>
-</li>
-<li>
-<a href='/chat/'>chat</a>
-</li>
-</li>
+<li><a href='/numbers/'>numbers form</a></li>
+<li><a href='/chat/'>chat</a></li>
+<li><a href='/session-counter/'>session counter</a></li>
 </ul>
 
 <p>You can browse the source code on <a href='$githublink'>GitHub</a>.</p>
@@ -367,11 +363,28 @@ action_chat_sendmsg(){
     echo "$nick: $msg" >> $TEMP_DIR/chat.txt
 }
 
+action_session_counter(){
+    n="$( session_get_value counter )"
+    [ "x$n" = "x" ] && n=0
+    n=$(( $n + 1 ))
+    echo $n | session_set_value counter
+}
+
+view_session_counter(){
+cat <<EOF
+<html>
+<h1>Session based counter</h1>
+<p>Session id: $SESSION_ID</p>
+<p>Value: $n</p>
+EOF
+}
+
 ##
 ## ROUTES
 ##
 
 add_route '^/$'             'index'
+add_route '^/session-counter/$'    'session_counter'
 add_route '^/numbers/$'     'numbers'
 add_route '^/chat/$'        'chat'
 add_route '^/chat/sendmsg$' 'chat_sendmsg'
