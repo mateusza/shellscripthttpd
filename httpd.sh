@@ -202,7 +202,6 @@ view_REDIRECT(){
 
 action_index(){
     name="Mateusz"
-    os=$( uname -a )
 }
 
 view_index(){
@@ -221,10 +220,9 @@ a { color: #ff0; }
 <body>
 <h1>Hello world!</h1>
 <h2>This is front page of your <b>$SERVER_SOFTWARE</b> instance.</h2>
-<p>
-We are running on: <tt>$os</tt><br>
-<br>
-</p>
+<p>See the example apps:</p>
+<ul>
+</ul>
 $( template_server_signature )
 </body>
 </html>
