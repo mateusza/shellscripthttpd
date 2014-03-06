@@ -146,6 +146,18 @@ session_get_value(){
     [ -e "$TEMP_DIR/session-$SESSION_ID-${1}.txt" ] && cat "$TEMP_DIR/session-$SESSION_ID-${1}.txt"
 }
 
+session_regenerate_id(){
+    local old_id
+    local newname
+    old_id="$SESSION_ID"
+    session_gen_id
+    for filename in $TEMP_DIR/session-$old_id-*.txt
+    do
+        newname=$( echo $filename | sed -e "s/$old_id/$SESSION_ID/" )
+        mv "$filename" "$newname"
+    done
+}
+
 xsrf_init(){
     XSRF="$( session_get_value XSRF )"
     if [ "x$XSRF" = "x" ]
