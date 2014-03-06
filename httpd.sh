@@ -176,11 +176,16 @@ template_server_signature(){
 }
 
 view_ERROR500(){
-    echo "<h1>ERROR 500</h1>"
+    echo "<title>Internal Server Error</title>"
+    echo "<h1>Internal Server Error</h1>"
+    echo "<p>Something wrong happened.</p>"
+    template_server_signature
 }
 
 view_ERROR404(){
+    echo "<title>404 Not found</title>"
     echo "<h1>404 Not found</h1>"
+    template_server_signature
 }
 
 action_ERROR404(){
@@ -189,6 +194,7 @@ action_ERROR404(){
 
 view_REDIRECT(){
     echo "<h1>redirecting... <code>$REDIRECTION_LOCATION</code></h1>"
+    template_server_signature
 }
 
 #
