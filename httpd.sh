@@ -29,6 +29,7 @@ ROUTES_FILE="/tmp/http-routes.$$.txt"
 # functions
 
 response_name(){
+    [ "$1" = "101" ] && echo "Switching Protocols"
     [ "$1" = "200" ] && echo "OK"
     [ "$1" = "404" ] && echo "Not found"
     [ "$1" = "500" ] && echo "Internal Server Error"
@@ -296,6 +297,14 @@ cat <<EOF
 EOF
 }
 
+action_ws(){
+    true
+}
+
+view_ws(){
+    cat wstest.html
+}
+
 ##
 ## ROUTES
 ##
@@ -306,7 +315,7 @@ add_route '^/x/say$'        'say'
 add_route '^/form1/$'       'form1'
 add_route '^/form1/save$'   'form1_save'
 add_route '^/form2/$'       'form2'
-
+add_route '^/ws/$'          'ws'
 ##
 ## process the request
 ##
