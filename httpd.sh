@@ -29,8 +29,8 @@ SERVER_NAME="$SERVER_SOFTWARE/$SERVER_VERSION"
 response_name(){
     [ "$1" = "200" ] && echo "OK"
     [ "$1" = "404" ] && echo "Not found"
-    [ "$1" = "500" ] && echo "Internal Server Error"
     [ "$1" = "303" ] && echo "See other"
+    [ "$1" = "500" ] && echo "Internal Server Error"
 }
 
 add_header(){
