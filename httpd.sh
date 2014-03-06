@@ -10,7 +10,8 @@ TEMP_DIR="/tmp/ss"
 
 # initial settings
 
-SERVER_VERSION="shellscripthttpd/0.2.0"
+SERVER_SOFTWARE="shellscripthttpd"
+SERVER_VERSION="0.3.0"
 SERVER_PROTOCOL="HTTP/1.0"
 CHARSET="UTF-8"
 CONTENT_TYPE="text/html; charset=$CHARSET"
@@ -20,6 +21,8 @@ RESPONSE_FILE="$TEMP_DIR/http-response.$$.txt"
 REQUEST_HEADERS_FILE="$TEMP_DIR/http-request-headers.$$.txt"
 REQUEST_BODY="$TEMP_DIR/http-request.$$.txt"
 ROUTES_FILE="$TEMP_DIR/http-routes.$$.txt"
+
+SERVER_NAME="$SERVER_SOFTWARE/$SERVER_VERSION"
 
 # functions
 
@@ -166,6 +169,10 @@ redirect(){
     add_header "Location" "$REDIRECTION_LOCATION"
     VIEW="REDIRECT"
     CODE=303
+}
+
+template_server_signature(){
+    echo "<hr><p>$SERVER_NAME</p>"
 }
 
 view_ERROR500(){
