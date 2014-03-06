@@ -1,13 +1,7 @@
 TODO
 ====
 
-* session cookies
-  * assign session ID
-  * rename session ID
-  * cleanup
-* session variable support
-  * read variable
-  * write variable
+* cleanup session cookies
 * serve local files
 * handle locations lacking trailing slash
-* WebSockets
+* WebSockets [dev]
