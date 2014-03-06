@@ -299,83 +299,12 @@ $( template_server_signature )
 EOF
 }
 
-action_session1(){
-    n="$( session_get_value counter )"
-    [ "x$n" = "x" ] && n=0
-    n=$(( $n + 1 ))
-    echo $n | session_set_value counter
-}
-
-view_session1(){
-cat <<EOF
-<html>
-<h1>Session based counter</h1>
-<p>Session id: $SESSION_ID</p>
-<p>Value: $n</p>
-EOF
-}
-
-action_xsrf_form(){
-    result=$( session_get_value result )
-    echo | session_set_value result
-}
-
-view_xsrf_form(){
-cat <<EOF
-<h1>Form</h1>
-<p>result: $result</p>
-<form method='POST' action='submit'>
-<input type='hidden' name='XSRF' value='$XSRF'>
-<input type='submit'>
-</form>
-<h2>broken form (lacking XSRF field)</h2>
-<form method='POST' action='submit'>
-<input type='submit'>
-</form>
-EOF
-}
-
-action_xsrf_form_submit(){
-    require_POST || return 1
-    require_XSRF || return 1
-    redirect '/xsrf-form/'
-    echo success | session_set_value result
-}
-
-action_session2(){
-    counter="$( session_get_value counter )"
-}
-
-view_session2(){
-cat <<EOF
-<html>
-<p>$SESSION_ID</p>
-<p>counter: $counter</p>
-
-<form action='change' method='POST'>
-<input type='submit'>
-<input type='hidden' name='XSRF' value="$XSRF">
-</form>
-EOF
-}
-
-action_session2_change(){
-    require_POST || return 1
-    require_XSRF || return 1
-    redirect '/session2/'
-    session_regenerate_id
-}
-
 ##
 ## ROUTES
 ##
 
 add_route '^/$'             'index'
-add_route '^/session1/$'    'session1'
-add_route '^/xsrf-form/$'   'xsrf_form'
-add_route '^/xsrf-form/submit$' 'xsrf_form_submit'
-add_route '^/session2/$'    'session2'
-add_route '^/session2/change$'  'session2_change'
+
 ##
 ## process the request
 ##
