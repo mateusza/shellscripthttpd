@@ -250,6 +250,7 @@ cat <<EOF
 body { background-color: #010; padding: 50px; font-size: 150%; color: #de9; font-family: sans-serif; text-shadow: #888 1px 1px 1px; text-align: center; } 
 pre { text-align: left; } 
 ::selection { background-color: #4f4; color: #000; text-shadow: #242; }
+a { color: #ff0; }
 </style>
 </head>
 <body>
