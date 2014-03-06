@@ -7,7 +7,7 @@
 #
 # custom settings
 TEMP_DIR="/tmp/ss"
-
+SESSION_COOKIE_NAME="SessionId"
 # initial settings
 
 SERVER_SOFTWARE="shellscripthttpd"
@@ -105,6 +105,40 @@ request(){
         echo -n '&' >> $REQUEST_BODY
     fi
 
+    if [ "x$HTTP_COOKIE" != "x" ]
+    then
+        session_load_cookie
+        session_check_cookie
+    fi
+
+}
+
+session_load_cookie(){
+        SESSION_ID=$( echo "$HTTP_COOKIE" | grep -o "\b$SESSION_COOKIE_NAME=[^;]\+" | sed -e 's/^.\+=//' )
+}
+
+session_check_cookie(){
+    if echo "$SESSION_ID" | grep "^[0-9a-f]\{32\}$" > /dev/null
+    then
+        true
+    else
+        session_gen_id
+        add_header "Set-Cookie" "$SESSION_COOKIE_NAME=$SESSION_ID"
+    fi
+}
+
+session_gen_id(){
+    SESSION_ID=$( head -c 128 /dev/urandom | md5sum | cut -d " " -f 1 )
+}
+
+session_set_value(){
+    session_check_cookie
+    cat > "$TEMP_DIR/session-$SESSION_ID-${1}.txt"
+}
+
+session_get_value(){
+    session_check_cookie
+    [ -e "$TEMP_DIR/session-$SESSION_ID-${1}.txt" ] && cat "$TEMP_DIR/session-$SESSION_ID-${1}.txt"
 }
 
 response(){
@@ -231,12 +265,28 @@ $( template_server_signature )
 EOF
 }
 
+action_session1(){
+    n="$( session_get_value counter )"
+    [ "x$n" = "x" ] && n=0
+    n=$(( $n + 1 ))
+    echo $n | session_set_value counter
+}
+
+view_session1(){
+cat <<EOF
+<html>
+<h1>Session based counter</h1>
+<p>Session id: $SESSION_ID</p>
+<p>Value: $n</p>
+EOF
+}
+
 ##
 ## ROUTES
 ##
 
 add_route '^/$'             'index'
-
+add_route '^/session1/$'    'session1'
 ##
 ## process the request
 ##
