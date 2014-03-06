@@ -7,11 +7,11 @@
 #
 # custom settings
 TEMP_DIR="/tmp/ss"
-
+SESSION_COOKIE_NAME="SessionId"
 # initial settings
 
 SERVER_SOFTWARE="shellscripthttpd"
-SERVER_VERSION="0.3.0"
+SERVER_VERSION="0.4.0"
 SERVER_PROTOCOL="HTTP/1.0"
 CHARSET="UTF-8"
 CONTENT_TYPE="text/html; charset=$CHARSET"
@@ -48,6 +48,15 @@ require_POST(){
         VIEW="ERROR500"
         return 1
     fi    
+}
+
+require_XSRF(){
+    if [ "x$XSRF" != "x$( read_post_var XSRF )" ]
+    then
+        CODE="500"
+        VIEW="ERROR500"
+        return 1
+    fi
 }
 
 read_post_var(){
@@ -104,8 +113,66 @@ request(){
         head -c $HTTP_CONTENT_LENGTH >> $REQUEST_BODY
         echo -n '&' >> $REQUEST_BODY
     fi
-
+    
+    if [ "x$REQUEST_METHOD" != "x" ]
+    then
+        session_load_cookie
+        session_check_cookie
+        xsrf_init
+    fi
+    
+#    add_header "X-Test" "$REQUEST_METHOD $REQUEST_URI $CLIENT_PROTOCOL"
 }
+
+session_load_cookie(){
+    SESSION_ID="$( echo "$HTTP_COOKIE" | grep -o "\b$SESSION_COOKIE_NAME=[^;]\+" | sed -e 's/^.\+=//' )"
+}
+
+session_check_cookie(){
+    if echo "$SESSION_ID" | grep "^[0-9a-f]\{32\}$" > /dev/null
+    then
+        true
+    else
+        session_gen_id
+        add_header "Set-Cookie" "$SESSION_COOKIE_NAME=$SESSION_ID; HttpOnly; Path=/"
+    fi
+}
+
+session_gen_id(){
+    SESSION_ID=$( head -c 128 /dev/urandom | md5sum | cut -d " " -f 1 )
+}
+
+session_set_value(){
+    cat > "$TEMP_DIR/session-$SESSION_ID-${1}.txt"
+}
+
+session_get_value(){
+    [ -e "$TEMP_DIR/session-$SESSION_ID-${1}.txt" ] && cat "$TEMP_DIR/session-$SESSION_ID-${1}.txt"
+}
+
+session_regenerate_id(){
+    local old_id
+    local newname
+    old_id="$SESSION_ID"
+    session_gen_id
+    for filename in $TEMP_DIR/session-$old_id-*.txt
+    do
+        newname=$( echo $filename | sed -e "s/$old_id/$SESSION_ID/" )
+        mv "$filename" "$newname"
+    done
+    add_header "Set-Cookie" "$SESSION_COOKIE_NAME=$SESSION_ID; HttpOnly; Path=/"
+}
+
+xsrf_init(){
+    XSRF="$( session_get_value XSRF )"
+    if [ "x$XSRF" = "x" ]
+    then
+        XSRF="$( head -c 32 /dev/urandom | md5sum | cut -d " " -f 1 )"
+        echo $XSRF | session_set_value XSRF
+    fi
+}
+
+
 
 response(){
     view_$VIEW > $RESPONSE_FILE
@@ -202,6 +269,8 @@ view_REDIRECT(){
 
 action_index(){
     name="Mateusz"
+    githublink="https://github.com/mateusza/shellscripthttpd"
+    os=$( uname -a )
 }
 
 view_index(){
@@ -211,10 +280,10 @@ cat <<EOF
 <head>
 <title>Hello from $name</title>
 <style> 
-body { background-color: #010; padding: 50px; font-size: 150%; color: #de9; font-family: sans-serif; text-shadow: #888 1px 1px 1px; text-align: center; } 
+body { background-color: #242; padding: 50px; font-size: 150%; color: #fff; font-family: monospace; text-shadow: #000 1px 1px 1px; text-align: center; } 
 pre { text-align: left; } 
 ::selection { background-color: #4f4; color: #000; text-shadow: #242; }
-a { color: #ff0; }
+a { color: #f90; }
 </style>
 </head>
 <body>
@@ -230,6 +299,11 @@ a { color: #ff0; }
 </li>
 </li>
 </ul>
+
+<p>You can browse the source code on <a href='$githublink'>GitHub</a>.</p>
+<p><small>
+Running on: <tt>$os</tt>
+</small></p>
 $( template_server_signature )
 </body>
 </html>
