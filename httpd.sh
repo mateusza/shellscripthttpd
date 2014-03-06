@@ -157,12 +157,7 @@ prepare(){
 }
 
 _e(){
-    sed -e '
-    s_&_\&amp;_g;
-    s_<_\&lt;_g;
-    s_>_\&gt;_g;
-    s_"_\&quot;_g;
-    '"s_'_\&apos;_g"
+    sed -e ' s_&_\&amp;_g; s_<_\&lt;_g; s_>_\&gt;_g; s_"_\&quot;_g; '"s_'_\&apos;_g"
 }
 
 run(){
