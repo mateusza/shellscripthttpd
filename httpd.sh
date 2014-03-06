@@ -26,6 +26,8 @@ REQUEST_HEADERS_FILE="/tmp/http-request-headers.$$.txt"
 REQUEST_BODY="/tmp/http-request.$$.txt"
 ROUTES_FILE="/tmp/http-routes.$$.txt"
 
+WEBSOCKET_MAGIC_GUID="258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+
 # functions
 
 response_name(){
@@ -124,6 +126,14 @@ response(){
     cat "$RESPONSE_FILE"
 }
 
+response_websocket(){
+    SERVER_PROTOCOL="HTTP/1.1"
+    CODE="101"
+    echo "$SERVER_PROTOCOL $CODE $( response_name $CODE )"
+    cat "$RESPONSE_HEADERS_FILE"
+    echo ""
+}
+
 route(){
     while read route action
     do
@@ -150,11 +160,26 @@ urldecode(){
 }
 
 prepare(){
+    SHOW_RESPONSE="yes"
     DATE=$(date +"%a, %d %b %Y %H:%M:%S %Z")
     add_header "Date" "$DATE"
-    add_header "Connection" "close"
     add_header "Server" "$SERVER_VERSION"
+    if [ "$HTTP_CONNECTION" = "Upgrade" ] && [ "$HTTP_UPGRADE" = "websocket" ]
+    then
+        prepare_websocket
+        return
+    fi
+    add_header "Connection" "close"
     add_header "Content-Type" "$CONTENT_TYPE"
+}
+
+prepare_websocket(){
+    SHOW_RESPONSE="no"
+    CODE="101"
+    add_header "Upgrade" "websocket"
+    add_header "Connection" "upgrade"
+    WEBSOCKET_TICKET="$( /usr/bin/printf "$( echo -n $HTTP_SEC_WEBSOCKET_KEY$WEBSOCKET_MAGIC_GUID | sha1sum | grep -o '[0-9a-f]\+' | sed -e 's/../\\x\0/g' )" | base64 )"
+    add_header "Sec-WebSocket-Accept" "$WEBSOCKET_TICKET"
 }
 
 _e(){
@@ -165,7 +190,7 @@ run(){
     request
     prepare
     route
-    response | awk 'sub("$", "\r")'
+    [ "x$SHOW_RESPONSE" = "xyes" ] && response | awk 'sub("$", "\r")'
     cleanup
 }
 
@@ -300,6 +325,29 @@ view_ws(){
     cat wstest.html
 }
 
+action_wsconnect(){
+    local message
+    local random
+    local lenhex
+
+    response_websocket | awk 'sub("$", "\r")'
+    for a in 1 2 1 3 1
+    do
+        random=`head -c 1 /dev/urandom | hexdump -v -e '1/1 "%u"'`
+        message="RX: $( ifconfig wlan0 | grep "RX bytes" | grep -o '[0-9]\+' | head -1 )"
+        lenhex=$( printf "%02x" "$( echo -n $message | wc -c )" )
+        /usr/bin/printf "\x81\x$lenhex%s" "$message"
+        sleep $a
+    done 
+
+    /usr/bin/printf "\x88\x00"
+
+}
+
+view_wsconnect(){
+    true
+}
+
 ##
 ## ROUTES
 ##
@@ -311,6 +359,7 @@ add_route '^/form1/$'       'form1'
 add_route '^/form1/save$'   'form1_save'
 add_route '^/form2/$'       'form2'
 add_route '^/ws/$'          'ws'
+add_route '^/wsconnect/$'   'wsconnect'
 ##
 ## process the request
 ##
