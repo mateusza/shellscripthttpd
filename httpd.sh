@@ -172,8 +172,6 @@ xsrf_init(){
     fi
 }
 
-
-
 response(){
     view_$VIEW > $RESPONSE_FILE
     add_header "Content-Length" "$( awk 'sub("$", "\r")' < $RESPONSE_FILE | wc -c )"
@@ -204,6 +202,7 @@ route(){
         VIEW=ERROR404
     fi
     action_$ACTION
+    add_header "Content-Type" "$CONTENT_TYPE"
 }
 
 urldecode(){
@@ -215,7 +214,6 @@ prepare(){
     add_header "Date" "$DATE"
     add_header "Connection" "close"
     add_header "Server" "$SERVER_VERSION"
-    add_header "Content-Type" "$CONTENT_TYPE"
 }
 
 _e(){
