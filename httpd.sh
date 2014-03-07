@@ -172,8 +172,6 @@ xsrf_init(){
     fi
 }
 
-
-
 response(){
     view_$VIEW > $RESPONSE_FILE
     add_header "Content-Length" "$( awk 'sub("$", "\r")' < $RESPONSE_FILE | wc -c )"
