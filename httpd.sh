@@ -74,6 +74,7 @@ cleanup(){
     rm -f "$ROUTES_FILE"
     rm -f "$RESPONSE_FILE"
     rm -f "$REQUEST_BODY"
+    rm -f "$ERRORS_FILE"
 }
 
 request(){
