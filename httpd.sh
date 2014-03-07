@@ -21,6 +21,7 @@ RESPONSE_FILE="$TEMP_DIR/http-response.$$.txt"
 REQUEST_HEADERS_FILE="$TEMP_DIR/http-request-headers.$$.txt"
 REQUEST_BODY="$TEMP_DIR/http-request.$$.txt"
 ROUTES_FILE="$TEMP_DIR/http-routes.$$.txt"
+ERRORS_FILE="$TEMP_DIR/http-errors.$$.txt"
 
 SERVER_NAME="$SERVER_SOFTWARE/$SERVER_VERSION"
 
@@ -73,6 +74,7 @@ cleanup(){
     rm -f "$ROUTES_FILE"
     rm -f "$RESPONSE_FILE"
     rm -f "$REQUEST_BODY"
+    rm -f "$ERRORS_FILE"
 }
 
 request(){
@@ -144,6 +146,10 @@ session_gen_id(){
 
 session_set_value(){
     cat > "$TEMP_DIR/session-$SESSION_ID-${1}.txt"
+}
+
+session_unset_value(){
+    [ -e "$TEMP_DIR/session-$SESSION_ID-${1}.txt" ] && rm "$TEMP_DIR/session-$SESSION_ID-${1}.txt"
 }
 
 session_get_value(){
@@ -223,9 +229,16 @@ _e(){
 run(){
     request
     prepare
-    route
+    route 2> "$ERRORS_FILE"
+    handle_errors
     response | awk 'sub("$", "\r")'
     cleanup
+}
+
+handle_errors(){
+    [ -s "$ERRORS_FILE" ] || return
+    VIEW="ERROR500"
+    CODE="500"
 }
 
 redirect(){
@@ -240,9 +253,20 @@ template_server_signature(){
 }
 
 view_ERROR500(){
+
     echo "<title>Internal Server Error</title>"
     echo "<h1>Internal Server Error</h1>"
-    echo "<p>Something wrong happened.</p>"
+    echo "<h2>Error:</h2>"
+    echo "<pre style='padding: 10px; background-color: #eee;'>"
+    cat "$ERRORS_FILE" | _e
+    echo "</pre>"
+    echo "<h2>request headers &amp; content</h2>"
+    echo "<pre style='padding: 10px; background-color: #eee;'>"
+    echo -n "$REQUEST_METHOD $REQUEST_URI $CLIENT_PROTOCOL" | _e
+    cat "$REQUEST_HEADERS_FILE" | _e
+    echo 
+    cat "$REQUEST_BODY" | _e
+    echo "</pre>"
     template_server_signature
 }
 
