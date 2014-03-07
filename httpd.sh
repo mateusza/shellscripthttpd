@@ -291,9 +291,8 @@ a { color: #f90; }
 <h2>This is front page of your <b>$SERVER_SOFTWARE</b> instance.</h2>
 <p>See the example apps:</p>
 <ul>
-<li>
-<a href='/chat/'>chat</a>
-</li>
+<li><a href='/chat/'>chat</a></li>
+<li><a href='/chat2/'>better chat</a></li>
 </ul>
 
 <p>You can browse the source code on <a href='$githublink'>GitHub</a>.</p>
@@ -339,6 +338,43 @@ action_chat_sendmsg(){
     msg="$( read_post_var msg )"
     echo "$nick: $msg" >> $TEMP_DIR/chat.txt
 }
+
+action_chat2(){
+    chatfile="$TEMP_DIR/chat.txt"
+    nick="$( session_get_value nick )"
+    touch "$chatfile"
+}
+
+view_chat2(){
+cat <<EOF
+<!doctype>
+<html>
+<head>
+<title>chat</title>
+<script>function f(){ document.querySelector("#msg").focus() }</script>
+</head>
+<body onload='f()'>
+<pre>
+$( tail -20 "$chatfile" | _e )
+</pre>
+<form method=POST action=sendmsg>
+<input name=nick placeholder="your nick" value="$( echo $nick | _e )">:
+<input size=30 name=msg placeholder="type your message here" id='msg'>
+<input type=submit>
+</form>
+</body>
+</html>
+EOF
+}
+
+action_chat2_sendmsg(){
+    require_POST || return
+    redirect '/chat2/'
+    nick="$( read_post_var nick )"
+    msg="$( read_post_var msg )"
+    [ "x$msg" = "x" ] || echo "$nick: $msg" >> $TEMP_DIR/chat.txt
+    echo -n "$nick" | session_set_value nick
+}
 ##
 ## ROUTES
 ##
@@ -346,6 +382,9 @@ action_chat_sendmsg(){
 add_route '^/$'             'index'
 add_route '^/chat/$'        'chat'
 add_route '^/chat/sendmsg$' 'chat_sendmsg'
+add_route '^/chat2/$'        'chat2'
+add_route '^/chat2/sendmsg$' 'chat2_sendmsg'
+
 
 ##
 ## process the request
