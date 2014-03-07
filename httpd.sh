@@ -21,6 +21,7 @@ RESPONSE_FILE="$TEMP_DIR/http-response.$$.txt"
 REQUEST_HEADERS_FILE="$TEMP_DIR/http-request-headers.$$.txt"
 REQUEST_BODY="$TEMP_DIR/http-request.$$.txt"
 ROUTES_FILE="$TEMP_DIR/http-routes.$$.txt"
+ERRORS_FILE="$TEMP_DIR/http-errors.$$.txt"
 
 SERVER_NAME="$SERVER_SOFTWARE/$SERVER_VERSION"
 
@@ -227,7 +228,7 @@ _e(){
 run(){
     request
     prepare
-    route
+    route 2> "$ERRORS_FILE"
     response | awk 'sub("$", "\r")'
     cleanup
 }
