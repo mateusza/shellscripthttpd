@@ -229,8 +229,15 @@ run(){
     request
     prepare
     route 2> "$ERRORS_FILE"
+    handle_errors
     response | awk 'sub("$", "\r")'
     cleanup
+}
+
+handle_errors(){
+    [ -s "$ERRORS_FILE" ] || return
+    VIEW="ERROR500"
+    CODE="500"
 }
 
 redirect(){
@@ -245,9 +252,20 @@ template_server_signature(){
 }
 
 view_ERROR500(){
+
     echo "<title>Internal Server Error</title>"
     echo "<h1>Internal Server Error</h1>"
-    echo "<p>Something wrong happened.</p>"
+    echo "<h2>Error:</h2>"
+    echo "<pre style='padding: 10px; background-color: #eee;'>"
+    cat "$ERRORS_FILE" | _e
+    echo "</pre>"
+    echo "<h2>request headers &amp; content</h2>"
+    echo "<pre style='padding: 10px; background-color: #eee;'>"
+    echo -n "$REQUEST_METHOD $REQUEST_URI $CLIENT_PROTOCOL" | _e
+    cat "$REQUEST_HEADERS_FILE" | _e
+    echo 
+    cat "$REQUEST_BODY" | _e
+    echo "</pre>"
     template_server_signature
 }
 
