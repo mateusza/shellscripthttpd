@@ -202,6 +202,7 @@ route(){
         VIEW=ERROR404
     fi
     action_$ACTION
+    add_header "Content-Type" "$CONTENT_TYPE"
 }
 
 urldecode(){
@@ -213,7 +214,6 @@ prepare(){
     add_header "Date" "$DATE"
     add_header "Connection" "close"
     add_header "Server" "$SERVER_VERSION"
-    add_header "Content-Type" "$CONTENT_TYPE"
 }
 
 _e(){
