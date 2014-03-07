@@ -292,9 +292,10 @@ a { color: #f90; }
 <p>See the example apps:</p>
 <ul>
 <li><a href='/numbers/'>numbers form</a></li>
-<li><a href='/chat/'>chat</a></li>
 <li><a href='/session-counter/'>session counter</a></li>
 <li><a href='/form-xsrf/'>xsrf test</a></li>
+<li><a href='/chat/'>chat</a></li>
+<li><a href='/chat2/'>better chat</a></li>
 </ul>
 
 <p>You can browse the source code on <a href='$githublink'>GitHub</a>.</p>
@@ -427,6 +428,43 @@ action_go(){
     redirect '/form-xsrf/'
     echo success | session_set_value result
 }
+
+action_chat2(){
+    chatfile="$TEMP_DIR/chat.txt"
+    nick="$( session_get_value nick )"
+    touch "$chatfile"
+}
+
+view_chat2(){
+cat <<EOF
+<!doctype>
+<html>
+<head>
+<title>chat</title>
+<script>function f(){ document.querySelector("#msg").focus() }</script>
+</head>
+<body onload='f()'>
+<pre>
+$( tail -20 "$chatfile" | _e )
+</pre>
+<form method=POST action=sendmsg>
+<input name=nick placeholder="your nick" value="$( echo $nick | _e )">:
+<input size=30 name=msg placeholder="type your message here" id='msg'>
+<input type=submit>
+</form>
+</body>
+</html>
+EOF
+}
+
+action_chat2_sendmsg(){
+    require_POST || return
+    redirect '/chat2/'
+    nick="$( read_post_var nick )"
+    msg="$( read_post_var msg )"
+    [ "x$msg" = "x" ] || echo "$nick: $msg" >> $TEMP_DIR/chat.txt
+    echo -n "$nick" | session_set_value nick
+}
 ##
 ## ROUTES
 ##
@@ -438,6 +476,9 @@ add_route '^/chat/$'        'chat'
 add_route '^/chat/sendmsg$' 'chat_sendmsg'
 add_route '^/form-xsrf/$'   'form'
 add_route '^/form-xsrf/go$' 'go'
+add_route '^/chat2/$'        'chat2'
+add_route '^/chat2/sendmsg$' 'chat2_sendmsg'
+
 
 ##
 ## process the request
