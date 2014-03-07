@@ -146,6 +146,10 @@ session_set_value(){
     cat > "$TEMP_DIR/session-$SESSION_ID-${1}.txt"
 }
 
+session_unset_value(){
+    [ -e "$TEMP_DIR/session-$SESSION_ID-${1}.txt" ] && rm "$TEMP_DIR/session-$SESSION_ID-${1}.txt"
+}
+
 session_get_value(){
     [ -e "$TEMP_DIR/session-$SESSION_ID-${1}.txt" ] && cat "$TEMP_DIR/session-$SESSION_ID-${1}.txt"
 }
