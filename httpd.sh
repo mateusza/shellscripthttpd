@@ -78,6 +78,21 @@ cleanup(){
     rm -f "$ERRORS_FILE"
 }
 
+session_cleanup_stale_files(){
+    local currdate
+    local filedate
+    currdate=$( date +%s )
+    ls "$TEMP_DIR" | grep 'session-.*-.*\.txt' | while read f
+    do
+        filedate=$( date +%s -r "$TEMP_DIR/$f" )
+        if [ "$(( $currdate - $filedate > $SESSION_LIFETIME ))" -eq "1" ]
+        then
+            rm "$TEMP_DIR/$f"
+        fi
+    done
+
+}
+
 request(){
     local hname
     local hvalue
