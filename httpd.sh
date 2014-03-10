@@ -8,6 +8,7 @@
 # custom settings
 TEMP_DIR="/tmp/ss"
 SESSION_COOKIE_NAME="SessionId"
+SESSION_LIFETIME="$(( 60 * 60 ))"
 # initial settings
 
 SERVER_SOFTWARE="shellscripthttpd"
@@ -136,7 +137,8 @@ session_check_cookie(){
         true
     else
         session_gen_id
-        add_header "Set-Cookie" "$SESSION_COOKIE_NAME=$SESSION_ID; HttpOnly; Path=/"
+        EXPIRES=$( date +"%a, %d %b %Y %H:%M:%S %Z" -d @$(( `date +%s` + $SESSION_LIFETIME )) )
+        add_header "Set-Cookie" "$SESSION_COOKIE_NAME=$SESSION_ID; Expires=$EXPIRES; HttpOnly; Path=/"
     fi
 }
 
