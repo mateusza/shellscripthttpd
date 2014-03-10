@@ -76,6 +76,7 @@ cleanup(){
     rm -f "$RESPONSE_FILE"
     rm -f "$REQUEST_BODY"
     rm -f "$ERRORS_FILE"
+    [ "$( head -c 1 /dev/urandom | hexdump -e '1/1 "%u"' )" -lt "26" ] && session_cleanup_stale_files
 }
 
 session_cleanup_stale_files(){
