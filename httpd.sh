@@ -197,14 +197,31 @@ xsrf_init(){
 }
 
 response(){
-    view_$VIEW > $RESPONSE_FILE
-    add_header "Content-Length" "$( awk 'sub("$", "\r")' < $RESPONSE_FILE | wc -c )"
+    [ "x$VIEW" = "x" ] || view_$VIEW > $RESPONSE_FILE
+    if echo "$CONTENT_TYPE" | grep "^text/" > /dev/null
+    then
+        CONTENT_BINARY="n"
+    else
+        CONTENT_BINARY="y"
+    fi
+
+    if [ "x$CONTENT_BINARY" = "xn" ]
+    then
+        add_header "Content-Length" "$( awk 'sub("$", "\r")' < $RESPONSE_FILE | wc -c )"
+    else
+        add_header "Content-Length" "$( cat $RESPONSE_FILE | wc -c )"
+    fi
 
     echo "$SERVER_PROTOCOL $CODE $( response_name $CODE )"
     cat "$RESPONSE_HEADERS_FILE"
     echo ""
     [ "$REQUEST_METHOD" = "HEAD" ] && return
-    cat "$RESPONSE_FILE"
+    if [ "x$CONTENT_BINARY" = "xn" ]
+    then
+        awk 'sub("$", "\r")' < "$RESPONSE_FILE"
+    else
+        cat < "$RESPONSE_FILE"
+    fi
 }
 
 route(){
@@ -254,7 +271,7 @@ run(){
     prepare
     route 2> "$ERRORS_FILE"
     handle_errors
-    response | awk 'sub("$", "\r")'
+    response
     cleanup
 }
 
