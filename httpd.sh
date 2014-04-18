@@ -347,6 +347,7 @@ pre { text-align: left; }
 ::selection { background-color: #4f4; color: #000; text-shadow: #242; }
 a { color: #f90; }
 </style>
+<link rel="shortcut icon" href="/favicon.png">
 </head>
 <body>
 <h1>Hello world!</h1>
@@ -361,11 +362,23 @@ $( template_server_signature )
 EOF
 }
 
+action_favicon_png(){
+    CONTENT_TYPE='image/png'
+}
+
+view_favicon_png(){
+base64 -d <<EOF
+iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAADFBMVEXW8tsBBQAgRCH+//yFiTnV
+AAAAAXRSTlMAQObYZgAAADBJREFUCNdjYFq1qoFBa9WqFQzav/avYFj9bX8WMvH/PwrxtT4LXYlW
+2NIMiAEgowB3CiiQUFVI+AAAAABJRU5ErkJggg==
+EOF
+}
 ##
 ## ROUTES
 ##
 
 add_route '^/$'             'index'
+add_route '^/favicon\.png$' 'favicon_png'
 
 ##
 ## process the request
