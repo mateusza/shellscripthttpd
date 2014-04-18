@@ -216,6 +216,11 @@ route(){
             ACTION="$action"
             break
         fi
+        if echo "$SCRIPT_NAME/" | grep -o "$route" > /dev/null
+        then
+            redirect "$SCRIPT_NAME/"
+            break
+        fi
     done < $ROUTES_FILE
 
     VIEW=$ACTION
