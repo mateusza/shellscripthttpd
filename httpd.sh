@@ -12,7 +12,7 @@ SESSION_LIFETIME="$(( 60 * 60 ))"
 # initial settings
 
 SERVER_SOFTWARE="shellscripthttpd"
-SERVER_VERSION="0.4.0"
+SERVER_VERSION="0.4.4"
 SERVER_PROTOCOL="HTTP/1.0"
 CHARSET="UTF-8"
 CONTENT_TYPE="text/html; charset=$CHARSET"
