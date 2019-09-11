@@ -88,8 +88,18 @@ fi
 
 if [ "x$1" = "x-d" ]
 then
-    decode
+    decode 
 else
-    encode
+
+case $1 in
+#   "-w") encode  |tr -d '\n' | fold $1 $2;; #echo w spaced;
+#   "-w"*) encode |tr -d '\n' | fold $1 ;;
+##openwrt has no fold
+
+   "-w") encode  |tr -d '\n' | awk '{gsub(/.{'$2'}/,"&\n")}1' ;; #echo w spaced;
+   "-w"*) encode |tr -d '\n' | awk '{gsub(/.{'${1/-w/}'}/,"&\n")}1';;
+      **) encode ;;
+esac
+
 fi
 
