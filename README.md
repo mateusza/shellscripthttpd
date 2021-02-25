@@ -5,7 +5,7 @@ HTTPD written entirely in shell (works with Busybox)
 
 Start with [ACME micro\_inetd](http://www.acme.com/software/micro_inetd/) or any other inetd.
 
-##Features:
+## Features:
 
 * works with inetd
 * supports HTTP/1.0
