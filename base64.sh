@@ -1,95 +1,244 @@
-#!/bin/sh
-
-# fallback base64 implementation
-# works with busybox
-
-encode(){
-
-    hexdump -v -e '2/1 "%02x"' | \
-        sed -e 's/0/0000 /g;s/1/0001 /g;s/2/0010 /g;s/3/0011 /g;
-                s/4/0100 /g;s/5/0101 /g;s/6/0110 /g;s/7/0111 /g;
-                s/8/1000 /g;s/9/1001 /g;s/a/1010 /g;s/b/1011 /g;
-                s/c/1100 /g;s/d/1101 /g;s/e/1110 /g;s/f/1111 /g;' | \
-        tr -d ' ' | \
-        sed -e 's/[01]\{6\}/\0 /g' | \
-        sed -e 's_000000_A_g; s_000001_B_g; s_000010_C_g; s_000011_D_g;
-                s_000100_E_g; s_000101_F_g; s_000110_G_g; s_000111_H_g;
-                s_001000_I_g; s_001001_J_g; s_001010_K_g; s_001011_L_g;
-                s_001100_M_g; s_001101_N_g; s_001110_O_g; s_001111_P_g;
-                s_010000_Q_g; s_010001_R_g; s_010010_S_g; s_010011_T_g;
-                s_010100_U_g; s_010101_V_g; s_010110_W_g; s_010111_X_g;
-                s_011000_Y_g; s_011001_Z_g; s_011010_a_g; s_011011_b_g;
-                s_011100_c_g; s_011101_d_g; s_011110_e_g; s_011111_f_g;
-                s_100000_g_g; s_100001_h_g; s_100010_i_g; s_100011_j_g;
-                s_100100_k_g; s_100101_l_g; s_100110_m_g; s_100111_n_g;
-                s_101000_o_g; s_101001_p_g; s_101010_q_g; s_101011_r_g;
-                s_101100_s_g; s_101101_t_g; s_101110_u_g; s_101111_v_g;
-                s_110000_w_g; s_110001_x_g; s_110010_y_g; s_110011_z_g;
-                s_110100_0_g; s_110101_1_g; s_110110_2_g; s_110111_3_g;
-                s_111000_4_g; s_111001_5_g; s_111010_6_g; s_111011_7_g;
-                s_111100_8_g; s_111101_9_g; s_111110_+_g; s_111111_/_g;
-
-                s_0000_A=_g;  s_0001_E=_g;  s_0010_I=_g;  s_0011_M=_g;
-                s_0100_Q=_g;  s_0101_U=_g;  s_0110_Y=_g;  s_0111_c=_g;
-                s_1000_g=_g;  s_1001_k=_g;  s_1010_o=_g;  s_1011_s=_g;
-                s_1100_w=_g;  s_1101_0=_g;  s_1110_4=_g;  s_1111_8=_g;
-
-                s_00_A==_;    s_01_Q==_;    s_10_g==_;    s_11_w==_;
-                ' | \
-                tr -d ' ' | \
-                sed -e 's/.\{64\}/\0\n/g'
-        echo
+#!/bin/bash
+##inspired from https://gist.github.com/markusfisch/2648733
+##modded by https://github.com/benchonaut 2019
+# Fallback base64 en-/decoder for systems that lack a native implementation
+#
+# @param ... - flags
+which base64 &>/dev/null || {
+# if even od is missing
+which od &>/dev/null || od()
+{
+	local C O=0 W=16
+	while IFS= read -r -d '' -n 1 C
+	do
+		(( O%W )) || printf '%07o' $O
+		printf ' %02x' "'$C"
+		(( ++O%W )) || echo
+	done
+	echo
 }
+if which awk &>/dev/null
+then
+base64()
+{
+	# written by Danny Chouinard
+	# https://sites.google.com/site/dannychouinard/Home/unix-linux-trinkets/little-utilities/base64-and-base85-encoding-awk-scripts
+	awk \
+'function encode64()
+{
+	while( "od -v -t x1" | getline )
+	{
+		l = length( $0 );
+		for( c = 9; c <= l; ++c )
+		{
+			d = index( "0123456789abcdef", substr( $0, c, 1 ) );
 
-decode(){
- 
-/usr/bin/printf "$(
-tr -d '\n' | \
-sed -e '               
-        s_A==_@@_;    s_Q==_@,_;    s_g==_,@_;    s_w==_,,_;
+			if( d-- )
+			{
+				for( b = 1; b <= 4; ++b )
+				{
+					o = o*2+int( d/8 );
+					d = (d*2)%16;
 
-        s_A=_@@@@_;  s_E=_@@@,_;  s_I=_@@,@_;  s_M=_@@,,_;
-        s_Q=_@,@@_;  s_U=_@,@,_;  s_Y=_@,,@_;  s_c=_@,,,_;
-        s_g=_,@@@_;  s_k=_,@@,_;  s_o=_,@,@_;  s_s=_,@,,_;
-        s_w=_,,@@_;  s_@=_,,@,_;  s_4=_,,,@_;  s_8=_,,,,_;
+					if( ++obc == 6 )
+					{
+						printf substr( b64, ++o, 1 );
 
-        s_A_@@@@@@_g; s_B_@@@@@,_g; s_C_@@@@,@_g; s_D_@@@@,,_g;
-        s_E_@@@,@@_g; s_F_@@@,@,_g; s_G_@@@,,@_g; s_H_@@@,,,_g;
-        s_I_@@,@@@_g; s_J_@@,@@,_g; s_K_@@,@,@_g; s_L_@@,@,,_g;
-        s_M_@@,,@@_g; s_N_@@,,@,_g; s_O_@@,,,@_g; s_P_@@,,,,_g;
-        s_Q_@,@@@@_g; s_R_@,@@@,_g; s_S_@,@@,@_g; s_T_@,@@,,_g;
-        s_U_@,@,@@_g; s_V_@,@,@,_g; s_W_@,@,,@_g; s_X_@,@,,,_g;
-        s_Y_@,,@@@_g; s_Z_@,,@@,_g; s_a_@,,@,@_g; s_b_@,,@,,_g;
-        s_c_@,,,@@_g; s_d_@,,,@,_g; s_e_@,,,,@_g; s_f_@,,,,,_g;
-        s_g_,@@@@@_g; s_h_,@@@@,_g; s_i_,@@@,@_g; s_j_,@@@,,_g;
-        s_k_,@@,@@_g; s_l_,@@,@,_g; s_m_,@@,,@_g; s_n_,@@,,,_g;
-        s_o_,@,@@@_g; s_p_,@,@@,_g; s_q_,@,@,@_g; s_r_,@,@,,_g;
-        s_s_,@,,@@_g; s_t_,@,,@,_g; s_u_,@,,,@_g; s_v_,@,,,,_g;
-        s_w_,,@@@@_g; s_x_,,@@@,_g; s_y_,,@@,@_g; s_z_,,@@,,_g;
-        s_0_,,@,@@_g; s_1_,,@,@,_g; s_2_,,@,,@_g; s_3_,,@,,,_g;
-        s_4_,,,@@@_g; s_5_,,,@@,_g; s_6_,,,@,@_g; s_7_,,,@,,_g;
-        s_8_,,,,@@_g; s_9_,,,,@,_g; s_+_,,,,,@_g; s_/_,,,,,,_g;
-        ' | \
-    sed -e 's/[,@]\{4\}/\0 /g' | \
-    sed -e 's/@@@@/0/g; s/@@@,/1/g; s/@@,@/2/g; s/@@,,/3/g;
-            s/@,@@/4/g; s/@,@,/5/g; s/@,,@/6/g; s/@,,,/7/g;
-            s/,@@@/8/g; s/,@@,/9/g; s/,@,@/a/g; s/,@,,/b/g;
-            s/,,@@/c/g; s/,,@,/d/g; s/,,,@/e/g; s/,,,,/f/g;' | \
-    tr -d ' ' | \
-    sed -e 's/../\\x\0/g'
-    )"
+						if( ++rc > 75 )
+						{
+							printf( "\n" );
+							rc = 0;
+						}
+
+						obc = 0;
+						o = 0;
+					}
+				}
+			}
+		}
+	}
+
+	if( obc )
+	{
+		while( obc++ < 6 )
+		{
+			o = o*2;
+		}
+
+		printf "%c", substr( b64, ++o, 1 );
+	}
+
+	print "==";
 }
+function decode64()
+{
+	while( getline < "/dev/stdin" )
+	{
+		l = length( $0 );
+		for( i = 1; i <= l; ++i )
+		{
+			c = index( b64, substr( $0, i, 1 ) );
+			if( c-- )
+			{
+				for( b = 0; b < 6; ++b )
+				{
+					o = o*2+int( c/32 );
+					c = (c*2)%64;
 
-if [ "x$1" = "x-h" ]
-then
-    echo "usage: $0 [-d]"
-    exit
-fi
+					if( ++obc == 8 )
+					{
+						printf "%c", o;
+						obc = 0;
+						o = 0;
+					}
+				}
+			}
+		}
+	}
+}
+BEGIN {
+	b64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
-if [ "x$1" = "x-d" ]
-then
-    decode
+	if( ARGV[1] == "-d" )
+		decode64();
+	else
+		encode64();
+}' "$@"
+}
 else
-    encode
-fi
+cat <<EOF
 
+WARNING: your system is missing base64 AND awk!
+         base64 encoding/decoding will be painfully slow!
+
+EOF
+base64()
+{
+	local SET='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+	[ "$1" == '-d' ] && {
+		local N=0 V=0 C S IFS=
+
+		while read -r -d '' -r -n1 C
+		do
+			[ "$C" == $'\n' ] && continue
+
+			if [ "$C" == '=' ]
+			then
+				V=$(( V << 6 ))
+			else
+				C=${SET#*$C}
+				C=$(( ${#SET}-${#C} ))
+				(( C )) || continue
+
+				V=$(( V << 6 | --C ))
+			fi
+
+			(( ++N == 4 )) && {
+##	replace for		#for ( sms=16; sms > -1; sms -= 8 )
+				sms=16
+				while [ "$sms" -gt -1 ]
+##
+				do
+					C=$(( V >> sms & 255 ))
+					# shellcheck disable=SC2059
+					printf "\\$(( C*100/64+C%64*10/8+C%8 ))"
+## replace for 
+				sms=$(( sms - 8 ))
+## replace for
+				done
+
+				V=0
+				N=0
+			}
+		done
+
+		return
+	}
+
+	od -v -t x1 | {
+		local V=0 W=0 SH=16 A S N L
+
+		while read -r -a A
+		do
+##	replace for		#for (( N=1, L=${#A[@]}; N < L; ++N ))
+			N=1;L=${#A[@]}
+			while [ "$N" -lt "$L" ]
+			do
+				V=$(( 16#${A[$N]} << SH | V ))
+
+				(( (SH -= 8) < 0 )) || continue
+
+##	replace for		#for (( S=18; S > -1; S -= 6 ))
+				S=18
+				while [ "$S" -gt -1 ]
+##      replace for
+
+				do
+					echo -n ${SET:$(( V >> S & 63 )):1}
+
+					(( ++W > 75 )) && {
+						echo
+						W=0
+					}
+##      replace for
+				S=$(( S - 6 ))		
+##      replace for
+				done
+
+				SH=16
+				V=0
+##      replace for
+				 N=$(( N + 1 ))
+##      replace for
+ 
+			done
+		done
+
+		if (( SH == 8 ))
+		then
+			N=11
+		elif (( SH == 0 ))
+		then
+			N=5
+		else
+			N=0
+		fi
+
+		(( N )) && {
+##      replace for 	#for (( S=18; S > N; S -= 6 ))
+			S=18
+			while [ "$S" -gt "$N" ]
+##      replace for
+			do
+				echo -n ${SET:$(( V >> S & 63 )):1}
+
+				(( ++W > 75 )) && {
+					echo
+					W=0
+				}
+##      replace for
+			S=$(( S - 6 ))
+##      replace for
+			done
+
+##      replace for	#for (( S=N/5; S--; ))
+			S=$( expr "$N" "/" 5 )
+                        while [ "$S" -gt -1 ]
+##      replace for
+			
+			do
+				echo -n '='
+##      replace for
+			S=$(( S - 1 ))
+##      replace for
+			done
+		}
+
+		echo
+	}
+}
+fi
+}
+
+base64 "$@"
